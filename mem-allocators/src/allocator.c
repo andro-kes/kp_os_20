@@ -72,11 +72,16 @@ void* allocator_realloc(allocator_t* alloc, void* ptr, size_t new_size) {
         return NULL;
     }
     
-    /* Simple realloc: allocate new block, copy data, free old block */
+    /* NOTE: Simplified realloc implementation without data copy.
+     * This is a limitation of the current implementation - we don't track
+     * the size of allocated blocks in a way that allows copying data.
+     * A full implementation would need to:
+     * 1. Store the allocated size in the block header
+     * 2. Copy min(old_size, new_size) bytes to the new block
+     * This function is not used by the benchmark suite and is provided
+     * for API completeness only. */
     void* new_ptr = allocator_alloc(alloc, new_size);
     if (new_ptr) {
-        /* Note: We don't know the old size, so we can't do a proper memcpy
-         * In a real implementation, we'd need to store the size in the block header */
         allocator_free(alloc, ptr);
     }
     
@@ -86,26 +91,22 @@ void* allocator_realloc(allocator_t* alloc, void* ptr, size_t new_size) {
 void allocator_get_stats(allocator_t* alloc, allocator_stats_t* stats) {
     if (!alloc || !stats) return;
     
-    /* Stats are stored in the first part of the implementation structure */
-    /* Both allocators have stats at the same offset after the type field */
-    typedef struct {
-        allocator_type_t type;
-        void* heap;
-        size_t heap_size;
-        /* ... other fields ... */
-        /* Stats are usually near the end but after common fields */
-    } common_allocator_t;
-    
-    /* For simplicity, we'll access stats directly from the implementation
-     * This requires the stats to be at a known offset in both implementations */
-    
-    /* This is a simplified approach - a better way would be to add
-     * get_stats methods to each allocator implementation */
+    /* NOTE: Simplified stats implementation - returns zeroed stats.
+     * A full implementation would need to:
+     * 1. Add get_stats methods to segregated_freelist.h and mckusick_karels.h
+     * 2. Access the stats field at the known offset in each allocator struct
+     * 3. Copy the stats to the output parameter
+     * This function is not used by the benchmark suite (which outputs its own metrics)
+     * and is provided for API completeness only. */
     memset(stats, 0, sizeof(allocator_stats_t));
 }
 
 void allocator_reset_stats(allocator_t* alloc) {
     if (!alloc) return;
     
-    /* Similar to get_stats, this would need implementation-specific handling */
+    /* NOTE: Simplified stats implementation - no-op.
+     * A full implementation would need to add reset_stats methods to
+     * segregated_freelist.h and mckusick_karels.h.
+     * This function is not used by the benchmark suite and is provided
+     * for API completeness only. */
 }
