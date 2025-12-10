@@ -1,6 +1,4 @@
-#include "allocator.h"
-#include "segregated_freelist.h"
-#include "mckusick_karels.h"
+#include "../include/allocator.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,11 +47,12 @@ void print_result_csv(const benchmark_result_t* result) {
            result->ops_per_sec);
 }
 
-/* Benchmark: Sequential allocations and frees */
-void benchmark_sequential(allocator_t* alloc, const char* alloc_name, 
-                         size_t num_ops, FILE* output) {
-    double start = get_time_us();
+// Benchmark: Тестирует последовательное выделение и освобождение
+// Какой аллокатор, его название, сколько операций, куда печатать
+void benchmark_sequential(allocator_t* alloc, const char* alloc_name, float num_ops, FILE* output) {
+    double start = get_time_us(); // замеряем в мс
     
+    // выделяем + освобождаем = nums_ops
     for (size_t i = 0; i < num_ops / 2; i++) {
         void* ptr = allocator_alloc(alloc, 64);
         if (ptr) {
@@ -61,9 +60,11 @@ void benchmark_sequential(allocator_t* alloc, const char* alloc_name,
         }
     }
     
+    // Фиксируем оконание и считаем, сколько заняло
     double end = get_time_us();
     double elapsed = end - start;
     
+    // output bencmark
     benchmark_result_t result = {
         .allocator_name = alloc_name,
         .benchmark_name = "Sequential",
@@ -81,34 +82,32 @@ void benchmark_sequential(allocator_t* alloc, const char* alloc_name,
     }
 }
 
-/* Benchmark: Random size allocations */
-void benchmark_random(allocator_t* alloc, const char* alloc_name, 
-                     size_t num_ops, FILE* output) {
+/* Benchmark: тестирует в случайных условиях */
+void benchmark_random(allocator_t* alloc, const char* alloc_name, size_t num_ops, FILE* output) {
+    // Массив указателей на блоки памяти
     void* ptrs[1000];
     int ptr_count = 0;
     
-    srand(42);  /* Fixed seed for reproducibility */
+    srand(42); // Фиксируем последовательность случайных чисел
     double start = get_time_us();
     
     for (size_t i = 0; i < num_ops; i++) {
         int action = rand() % 2;
-        
+        // 0 - allocate
+        // 1 - free
         if (action == 0 && ptr_count < 1000) {
-            /* Allocate */
             size_t size = 16 + (rand() % 1024);
             void* ptr = allocator_alloc(alloc, size);
             if (ptr) {
                 ptrs[ptr_count++] = ptr;
             }
         } else if (ptr_count > 0) {
-            /* Free */
             int idx = rand() % ptr_count;
             allocator_free(alloc, ptrs[idx]);
             ptrs[idx] = ptrs[--ptr_count];
         }
     }
     
-    /* Free remaining */
     for (int i = 0; i < ptr_count; i++) {
         allocator_free(alloc, ptrs[i]);
     }
@@ -133,30 +132,29 @@ void benchmark_random(allocator_t* alloc, const char* alloc_name,
     }
 }
 
-/* Benchmark: Mixed allocation patterns */
-void benchmark_mixed(allocator_t* alloc, const char* alloc_name, 
-                    size_t num_ops, FILE* output) {
+/* Benchmark: Сочетание длинных и коротких операций */
+void benchmark_mixed(allocator_t* alloc, const char* alloc_name, size_t num_ops, FILE* output) {
     void* ptrs[500];
     
     double start = get_time_us();
     
-    /* Phase 1: Allocate many small blocks */
+    // Фаза 1: много маленьких блоков
     for (int i = 0; i < 500; i++) {
         ptrs[i] = allocator_alloc(alloc, 32);
     }
     
-    /* Phase 2: Free every other block */
+    /* Фаза 2: Освобождаем маленьких */
     for (int i = 0; i < 500; i += 2) {
         allocator_free(alloc, ptrs[i]);
         ptrs[i] = NULL;
     }
     
-    /* Phase 3: Allocate larger blocks in freed spaces */
+    /* Фаза 3: Аллоцируем много больших */
     for (int i = 0; i < 500; i += 2) {
         ptrs[i] = allocator_alloc(alloc, 128);
     }
     
-    /* Phase 4: Free all */
+    /* Фаза 4: Освобождаем */
     for (int i = 0; i < 500; i++) {
         if (ptrs[i]) {
             allocator_free(alloc, ptrs[i]);
@@ -170,7 +168,7 @@ void benchmark_mixed(allocator_t* alloc, const char* alloc_name,
         .allocator_name = alloc_name,
         .benchmark_name = "Mixed",
         .time_us = elapsed,
-        .operations = 2000,  /* Approximate operation count */
+        .operations = 2000,
         .ops_per_sec = 2000 / (elapsed / 1000000.0)
     };
     
@@ -183,15 +181,14 @@ void benchmark_mixed(allocator_t* alloc, const char* alloc_name,
     }
 }
 
-/* Benchmark: Stress test with many allocations */
-void benchmark_stress(allocator_t* alloc, const char* alloc_name, 
-                     size_t num_ops, FILE* output) {
+/* Benchmark: Стресс тест с множеством аллокаций */
+void benchmark_stress(allocator_t* alloc, const char* alloc_name, size_t num_ops, FILE* output) {
     void* ptrs[MAX_ALLOCS];
     int allocated = 0;
     
     double start = get_time_us();
     
-    /* Allocate as many as possible */
+    /* Аллоцируем как можно больше */
     for (int i = 0; i < MAX_ALLOCS && i < num_ops; i++) {
         ptrs[i] = allocator_alloc(alloc, 256);
         if (ptrs[i]) {
@@ -201,7 +198,6 @@ void benchmark_stress(allocator_t* alloc, const char* alloc_name,
         }
     }
     
-    /* Free all */
     for (int i = 0; i < allocated; i++) {
         allocator_free(alloc, ptrs[i]);
     }
@@ -213,7 +209,7 @@ void benchmark_stress(allocator_t* alloc, const char* alloc_name,
         .allocator_name = alloc_name,
         .benchmark_name = "Stress",
         .time_us = elapsed,
-        .operations = allocated * 2,  /* Allocs + frees */
+        .operations = allocated * 2,
         .ops_per_sec = (allocated * 2) / (elapsed / 1000000.0)
     };
     
@@ -226,9 +222,8 @@ void benchmark_stress(allocator_t* alloc, const char* alloc_name,
     }
 }
 
-/* Run all benchmarks for a given allocator */
-void run_benchmarks(allocator_type_t type, const char* name, 
-                   size_t num_ops, FILE* output) {
+
+void run_benchmarks(allocator_type_t type, const char* name, size_t num_ops, FILE* output) {
     printf("Running benchmarks for %s...\n", name);
     
     allocator_t* alloc = allocator_create(type, DEFAULT_HEAP_SIZE);
@@ -268,7 +263,6 @@ int main(int argc, char* argv[]) {
     const char* output_file = NULL;
     bool run_all = true;
     
-    /* Parse command line arguments */
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--allocator") == 0) {
             if (i + 1 >= argc) {
@@ -326,7 +320,6 @@ int main(int argc, char* argv[]) {
     printf("=== Memory Allocator Benchmark ===\n");
     printf("Operations per benchmark: %zu\n\n", num_ops);
     
-    /* Print CSV header */
     if (output) {
         fprintf(output, "Allocator,Benchmark,Time_us,Operations,Ops_per_sec\n");
     } else {

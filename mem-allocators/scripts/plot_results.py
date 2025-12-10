@@ -11,7 +11,7 @@ import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')  # Non-interactive backend
+matplotlib.use('Agg')
 
 def plot_results(csv_file, output_file=None):
     """Plot benchmark results from CSV file"""

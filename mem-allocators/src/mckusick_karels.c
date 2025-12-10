@@ -1,5 +1,5 @@
-#include "mckusick_karels.h"
-#include "allocator.h"
+#include "../include/mckusick_karels.h"
+#include "../include/allocator.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

@@ -1,5 +1,5 @@
-#include "segregated_freelist.h"
-#include "allocator.h"
+#include "../include/segregated_freelist.h"
+#include "../include/allocator.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>

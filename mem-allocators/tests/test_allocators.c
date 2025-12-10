@@ -1,6 +1,4 @@
-#include "allocator.h"
-#include "segregated_freelist.h"
-#include "mckusick_karels.h"
+#include "../include/allocator.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
