@@ -1,0 +1,5 @@
+Allocator,Benchmark,Time_us,Operations,Ops_per_sec
+McKusickKarels,Sequential,45.00,5000,111111111.11
+McKusickKarels,Random,492.00,10000,20325203.25
+McKusickKarels,Mixed,39.00,2000,51282051.28
+McKusickKarels,Stress,2319.00,20000,8624407.07

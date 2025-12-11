@@ -1,13 +1,12 @@
 # Build artifacts
 mem-allocators/build/
-mem-allocators/results/*.csv
-!mem-allocators/results/sample_results.csv
 
 # Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+.venv
 
 # Editor files
 *.swp

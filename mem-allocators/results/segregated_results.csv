@@ -1,0 +1,5 @@
+Allocator,Benchmark,Time_us,Operations,Ops_per_sec
+SegregatedFreeList,Sequential,398.00,5000,12562814.07
+SegregatedFreeList,Random,2587.00,10000,3865481.25
+SegregatedFreeList,Mixed,22.00,2000,90909090.91
+SegregatedFreeList,Stress,1863.00,20000,10735373.05

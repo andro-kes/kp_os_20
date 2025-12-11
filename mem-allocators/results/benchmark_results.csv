@@ -1,0 +1,9 @@
+Allocator,Benchmark,Time_us,Operations,Ops_per_sec
+SegregatedFreeList,Sequential,208.00,5000,24038461.54
+SegregatedFreeList,Random,1185.00,10000,8438818.57
+SegregatedFreeList,Mixed,7.00,2000,285714285.71
+SegregatedFreeList,Stress,677.00,20000,29542097.49
+McKusickKarels,Sequential,45.00,5000,111111111.11
+McKusickKarels,Random,480.00,10000,20833333.33
+McKusickKarels,Mixed,25.00,2000,80000000.00
+McKusickKarels,Stress,1839.00,20000,10875475.80
